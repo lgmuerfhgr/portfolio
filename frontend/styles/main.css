@@ -1,0 +1,137 @@
+@import "_fonts.css";
+@import "_resets.css";
+
+/* Definition of base styles. */
+:root {
+    /* colors alt*/
+    /* gaps & sizes */
+    --gap-around: 40px;
+
+     /* colors mein portfolio*/
+  --color-white: #ffffff;
+  --color-bg: #EDECE9;
+  --color-olive: #8A855F;
+  --color-blue: #213FC5;
+  --color-black: #000000;
+
+  /* gaps & sizes */
+  --gap-around: 40px;      
+  --gap-section: 120px;        
+  --card-width: 190px;         
+  --border-thin: 1px solid currentColor;
+
+    /* fonts */ 
+  --font-heading: "Marcellus", serif;
+  --font-body: "Mulish", sans-serif;
+}
+
+/* Styling of all available layout components. */
+[data-layout="header"] {
+    padding: var(--gap-around);
+    background-color: var(--color-white);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    .nav-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        .nav {
+            list-style: none;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 20px;
+            a {
+                text-decoration: none;
+                color: var(--color-black);
+                font-family: var(--font-body);
+            }
+    }
+  }
+}
+[data-layout="footer"] {
+    padding: var(--gap-around);
+    background-color: var(--color-bg);
+     .nav-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        .nav {
+            list-style: none;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 20px;
+            a {
+                text-decoration: none;
+                color: var(--color-black);
+                font-family: var(--font-body);
+            }
+    }
+  }
+}
+
+/* Styling of all available page components. */
+[data-page] {
+    width: 100%;
+    height: 100%;
+}
+
+/* Styling of all available module components. */
+[data-module] {
+    overflow: clip;
+    position: relative;
+    width: 100%;
+}
+[data-module="example"] {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    & > .image {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        inset: 0;
+    }
+    & > .title {
+        position: relative;
+        color: white;
+        font: var(--font-h1);
+        text-align: center;
+    }
+}
+
+/* Styling of all available teaser components. */
+
+/* Styling of utility classes, can be added anywhere in the project. */
+
+/* BREAKPOINT: 3xl */
+@media (max-width: 1514px) {}
+
+/* BREAKPOINT: xl */
+@media (max-width: 1280px) {}
+
+/* BREAKPOINT: lg */
+@media (max-width: 1024px) {}
+
+/* BREAKPOINT: md */
+@media (max-width: 768px) {}
+
+/* BREAKPOINT: sm */
+@media (max-width: 640px) {}
+
+/* BREAKPOINT: xs */
+@media (max-width: 425px) {}
+
+/* BREAKPOINT: xxs */
+@media (max-width: 400px) {}
