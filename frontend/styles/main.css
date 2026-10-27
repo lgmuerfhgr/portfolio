@@ -75,7 +75,36 @@
                 font-family: var(--font-body);
             }
     }
-  }
+  } 
+  /* FOOTER BUTTONS DIE IN DAS MODUL VERSCHOBEN WERDEN MÜSSEN */
+  .contact {
+    display: flex;
+    justify-content: center;
+    gap: var(--gap-around);
+    }
+        .contact a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 1 390px;
+            min-height: 87px;
+            background: var(--color-bg);
+            color: var(--color-black);
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            text-decoration: none;
+        }
+        /* Handy: Buttons untereinander */
+        @media (max-width: 700px) {
+            .contact {
+                flex-direction: column;
+                align-items: center;
+            }
+            .contact a {
+                width: 100%;
+                flex: none;
+            }
+        }
 }
 
 /* Styling of all available page components. */
