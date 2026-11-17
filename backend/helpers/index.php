@@ -85,6 +85,21 @@ function format_rich_text(?string $text): string
     return wp_kses_post(wpautop($text));
 }
 
+// -> Versionsnummer für CSS/JS: neuester Änderungszeitpunkt aller Dateien im Ordner
+//    (inkl. Unterordner). So lädt der Browser nach jedem Upload die neuen Dateien.
+function theme_asset_version(string $folder): string
+{
+    $path = get_template_directory() . '/' . trim($folder, '/');
+    $version = 0;
+    if (is_dir($path)) {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
+        foreach ($files as $file) {
+            $version = max($version, $file->getMTime());
+        }
+    }
+    return (string) $version;
+}
+
 // -> Ein Menu anhand des Keys laden
 function get_menu_by_slug(string $slug): array
 {

@@ -29,7 +29,6 @@
   --fs-display: clamp(2.6rem, 5.6vw, 6rem);   /* ABOUT ME ! / LET'S TALK ! (96px) */
   --fs-h1: clamp(2.2rem, 4.2vw, 4.5rem);      /* Titel Unterseiten */
   --fs-h3: clamp(1.05rem, 1.3vw, 1.375rem);   /* Projekt-Titel Info (22px) */
-  --fs-card: clamp(1.1rem, 1.4vw, 1.5rem);    /* Titel in Karte (24px) */
   --fs-nav: clamp(1rem, 1.27vw, 1.375rem);    /* Navigation (22px) */
   --fs-body: clamp(1rem, 1.1vw, 1.1875rem);   /* Fliesstext (19px) */
   --fs-small: clamp(0.8125rem, 0.87vw, 0.9375rem); /* Projektbeschreibung (15px) */
@@ -294,18 +293,30 @@ a {
   }
 }
 
-/* -> Galerie About: vertikale Scroll-Galerie links, Text rechts */
+/* -> Galerie About: vertikale Scroll-Galerie links, Text rechts (statisch)
+      Desktop: Die Sektion wird fixiert (.is-pinned, per JS), Titel und Text stehen still
+      und nur die Bilder laufen in ihrer Spalte durch. Die Höhe der Sektion setzt das JS. */
 [data-module="gallery-about"] {
   --gallery-gap: clamp(16px, 1.85vw, 32px);
-  display: grid;
-  grid-template-columns:
-    minmax(0, 224fr)
-    minmax(0, 349fr)
-    minmax(0, 227fr)
-    minmax(0, 700fr)
-    minmax(0, 228fr);
-  min-height: 100svh;
   background-color: var(--color-bg);
+  .about-inner {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 224fr)
+      minmax(0, 349fr)
+      minmax(0, 227fr)
+      minmax(0, 700fr)
+      minmax(0, 228fr);
+    min-height: 100svh;
+  }
+  &.is-pinned .about-inner {
+    position: sticky;
+    top: var(--pin-top, var(--header-h));
+    min-height: calc(100svh - var(--header-h));
+  }
+  &.is-pinned .content {
+    padding-block: clamp(24px, 5svh, 64px);
+  }
   .gallery {
     grid-column: 2;
     position: relative;
@@ -358,8 +369,10 @@ a {
   }
   /* Galerie ohne Text: Bilder im Raster über die ganze Breite */
   &.is-gallery-only {
-    min-height: 0;
     padding-block: clamp(64px, 7vw, 120px);
+    .about-inner {
+      min-height: 0;
+    }
     .gallery {
       grid-column: 2 / 5;
     }
@@ -443,27 +456,10 @@ a {
   .needs-filter {
     filter: grayscale(1);
   }
-  .card-title {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1em;
-    text-align: center;
-    font-family: var(--font-heading);
-    font-size: var(--fs-card);
-    line-height: 1.35;
-    text-shadow: 0 0 24px rgb(0 0 0 / 0.35);
-    transition: opacity var(--duration) var(--ease-out);
-  }
   /* Platzhalter ohne Bild: Rahmen wie in der Figma-Vorlage */
   &.is-empty .media {
     border: var(--border-thin);
     color: inherit;
-    .card-title {
-      text-shadow: none;
-    }
   }
   .info {
     position: absolute;
@@ -527,12 +523,6 @@ a {
     .needs-filter {
       filter: grayscale(0);
     }
-    .card-title {
-      opacity: 0;
-    }
-    &.is-empty .card-title {
-      opacity: 1;
-    }
     .info {
       opacity: 1;
       visibility: visible;
@@ -555,12 +545,6 @@ a {
     }
     .needs-filter {
       filter: grayscale(0);
-    }
-    .card-title {
-      opacity: 0;
-    }
-    &.is-empty .card-title {
-      opacity: 1;
     }
     .info {
       opacity: 1;
@@ -684,16 +668,18 @@ a {
   outline-offset: 4px;
 }
 
-/* -> Sanftes Einblenden beim Scrollen (nur mit aktivem JavaScript) */
-@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
-  [data-reveal] {
+/* -> Sanftes Einblenden beim Scrollen.
+      Nur aktiv, wenn reveal.js läuft (Klasse .has-reveal auf <html>),
+      damit Texte nie unsichtbar bleiben, falls das JavaScript nicht lädt. */
+@media (prefers-reduced-motion: no-preference) {
+  .has-reveal [data-reveal] {
     opacity: 0;
     transform: translateY(32px);
     transition:
       opacity 1s var(--ease-out),
       transform 1s var(--ease-out);
   }
-  [data-reveal].is-visible {
+  .has-reveal [data-reveal].is-visible {
     opacity: 1;
     transform: none;
   }
@@ -737,6 +723,20 @@ a {
   }
 }
 
+/* -> Niedrige Desktop-Bildschirme (z.B. Laptops): About-Text etwas kompakter,
+      damit Titel und Text beim Fixieren vollständig sichtbar bleiben */
+@media (min-width: 769px) and (max-height: 900px) {
+  [data-module="gallery-about"] {
+    .title {
+      font-size: min(var(--fs-display), 8svh);
+      margin-bottom: min(clamp(32px, 4.9vw, 84px), 3svh);
+    }
+    .text {
+      font-size: clamp(13px, 1.9svh, 19px);
+    }
+  }
+}
+
 /* BREAKPOINT: 3xl */
 @media (max-width: 1514px) {}
 
@@ -745,7 +745,7 @@ a {
 
 /* BREAKPOINT: lg */
 @media (max-width: 1024px) {
-  [data-module="gallery-about"] {
+  [data-module="gallery-about"] .about-inner {
     grid-template-columns:
       minmax(0, 0.6fr)
       minmax(0, 3fr)
@@ -829,10 +829,12 @@ a {
 
   /* About: Text oben, Galerie als horizontaler Wisch-Streifen */
   [data-module="gallery-about"] {
-    display: flex;
-    flex-direction: column-reverse;
-    min-height: 0;
     padding-bottom: clamp(48px, 12vw, 80px);
+    .about-inner {
+      display: flex;
+      flex-direction: column-reverse;
+      min-height: 0;
+    }
     .content {
       padding: clamp(48px, 12vw, 80px) var(--gap-page) clamp(32px, 8vw, 48px);
     }

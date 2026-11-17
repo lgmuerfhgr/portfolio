@@ -1,24 +1,14 @@
 <?php
 $menu = get_menu_by_slug('legals'); 
-js_log($menu);
-$contact = get_global_contact();
+// -> Die Kontakt-Buttons wurden ins Modul "Kontakt" verschoben (frontend/views/modules/contact.php)
 ?>
 
 <footer data-layout="footer">
-    <div class="contact">
-        <?php foreach ($contact as $item) : ?>
-            <?php if ($item['_type'] === 'email') : ?>
-                <a href="mailto:<?= $item['email'] ?>"><?= $item['title'] ?></a>
-            <?php else : ?>
-                <a target="_blank" rel="noopener" href="<?= esc_url($item['link']) ?>"><?= esc_html($item['title']) ?></a>
-            <?php endif; ?>
-        <?php endforeach; ?>
-    </div>
-    <nav class="nav-container">
+    <nav class="nav-container" aria-label="Rechtliches">
         <ul class="nav">
             <?php foreach ($menu as $item) : ?>
                 <li class="nav-item">
-                    <a target="<?= $item['target'] ?>" href="<?= $item['url'] ?>"><?= $item['title'] ?></a>
+                    <a target="<?= esc_attr($item['target']) ?>" href="<?= esc_url($item['url']) ?>"><?= esc_html($item['title']) ?></a>
                 </li>
             <?php endforeach; ?>
         </ul> 

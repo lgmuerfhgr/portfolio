@@ -1,8 +1,8 @@
 <?php
 /**
  * Projekt-Karte für die Projektübersicht.
- * Ruhezustand: Schwarzweissbild mit zentriertem Titel.
- * Hover / Fokus / aktiv (Touch): farbiges Bild, Karte wird grösser, Infos erscheinen darüber.
+ * Ruhezustand: nur das Schwarzweissbild (ohne Titel).
+ * Hover / Fokus / aktiv (Touch): farbiges Bild, Karte wird grösser, Titel und Infos erscheinen darüber.
  */
 $project = $args['data'];
 $has_image = !empty($project['image']['src']);
@@ -32,7 +32,6 @@ $sizes = '(max-width: 768px) 70vw, 24vw';
                 <?= get_media_image_tag($project['image'], 'image image-bw' . ($project['needs_filter'] ? ' needs-filter' : ''), $sizes) ?>
                 <?= get_media_image_tag($project['image_hover'] ?: $project['image'], 'image image-color', $sizes) ?>
             <?php endif; ?>
-            <span class="card-title" aria-hidden="true"><?= esc_html($project['title']) ?></span>
         </a>
     </article>
 </li>

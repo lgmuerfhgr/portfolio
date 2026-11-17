@@ -1,6 +1,8 @@
 <?php
 /**
- * Galerie About: vertikale Scroll-Galerie (links) + Text (rechts).
+ * Galerie About: vertikale Scroll-Galerie (links) + statischer Text (rechts).
+ * Auf dem Desktop wird die Sektion beim Scrollen fixiert: Titel und Text stehen still,
+ * nur die Bilder laufen in ihrer Spalte durch.
  * Die Bilder sind schwarzweiss und werden beim Hover (bzw. auf Touch-Geräten
  * beim Erreichen der Bildschirmmitte) farbig. Das Scrollverhalten steuert
  * frontend/scripts/modules/scroll-gallery.js.
@@ -11,6 +13,7 @@ $has_content = !empty($data['title']) || !empty($data['text']);
 ?>
 
 <section data-module="gallery-about" class="<?= $has_content ? '' : 'is-gallery-only' ?>"<?= get_module_id_attr($data) ?>>
+    <div class="about-inner" data-scroll-pin>
     <?php if ($images) : ?>
         <div class="gallery" data-scroll-gallery="y">
             <ul class="gallery-track" data-scroll-track>
@@ -24,13 +27,14 @@ $has_content = !empty($data['title']) || !empty($data['text']);
     <?php endif; ?>
 
     <?php if ($has_content) : ?>
-        <div class="content">
+        <div class="content" data-scroll-pin-content>
             <?php if (!empty($data['title'])) : ?>
-                <h2 class="title" data-reveal><?= esc_html($data['title']) ?></h2>
+                <h2 class="title"><?= esc_html($data['title']) ?></h2>
             <?php endif; ?>
             <?php if (!empty($data['text'])) : ?>
-                <div class="text" data-reveal><?= format_rich_text($data['text']) ?></div>
+                <div class="text"><?= format_rich_text($data['text']) ?></div>
             <?php endif; ?>
         </div>
     <?php endif; ?>
+    </div>
 </section>

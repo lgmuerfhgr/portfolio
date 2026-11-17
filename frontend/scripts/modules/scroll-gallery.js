@@ -8,6 +8,10 @@
  *
  * - Scroll-Modus (Desktop): Während die Sektion durch den Viewport scrollt, wird die
  *   Spur vertikal (About) bzw. horizontal (Projekte) verschoben – sanft gedämpft.
+ * - Fixieren (optional, About): Liegt die Galerie in einem [data-scroll-pin]-Element,
+ *   bleibt dieses stehen (sticky), bis alle Bilder durchgelaufen sind. Titel und Text
+ *   bewegen sich dabei nicht. Ist der Inhalt höher als der Bildschirm, wird erst fixiert,
+ *   wenn sein unteres Ende erreicht ist (so bleibt kein Text unerreichbar).
  * - Nativ-Modus (Mobile, reduzierte Bewegung): Die Galerie ist ein normaler,
  *   wischbarer Scroll-Container (Klasse .is-native).
  * - Geräte ohne Hover (Touch): Das Element in der Bildschirmmitte erhält .is-active
@@ -23,6 +27,9 @@ const EASING = 0.12; // Dämpfung der Bewegung (0–1, kleiner = weicher)
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
+const getHeaderHeight = () =>
+    parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 0;
+
 export function initScrollGalleries() {
     const galleries = [...document.querySelectorAll('[data-scroll-gallery]')]
         .map((element) => ({
@@ -31,6 +38,9 @@ export function initScrollGalleries() {
             track: element.querySelector('[data-scroll-track]'),
             items: [...element.querySelectorAll('[data-scroll-item]')],
             section: element.closest('[data-module]') || element,
+            pin: element.closest('[data-scroll-pin]'),
+            pinned: false,
+            pinTop: 0,
             current: 0,
             target: 0,
             linked: false,
@@ -51,14 +61,34 @@ export function initScrollGalleries() {
                 gallery.current = gallery.target = 0;
                 gallery.track.style.transform = '';
             }
+            updatePin(gallery);
         });
+    };
+
+    // -> Sektion fixieren und ihre Höhe so setzen, dass alle Bilder einmal durchlaufen
+    const updatePin = (gallery) => {
+        if (!gallery.pin) return;
+        gallery.pinned = gallery.linked;
+        gallery.section.classList.toggle('is-pinned', gallery.pinned);
+        if (!gallery.pinned) {
+            gallery.section.style.height = '';
+            gallery.section.style.removeProperty('--pin-top');
+            return;
+        }
+        // Normalfall: direkt unter dem Header fixieren. Ist der Inhalt höher als der
+        // verfügbare Platz, so fixieren, dass sein unteres Ende am Bildschirmrand liegt.
+        const pinHeight = gallery.pin.offsetHeight;
+        gallery.pinTop = Math.min(getHeaderHeight(), window.innerHeight - pinHeight);
+        gallery.section.style.setProperty('--pin-top', `${gallery.pinTop}px`);
+        const overflow = Math.max(0, gallery.track.offsetHeight - gallery.element.clientHeight);
+        gallery.section.style.height = `${pinHeight + overflow}px`;
     };
 
     // -> Horizontale Galerien: Die Bewegung läuft, solange die Kartenreihe vollständig sichtbar ist
     //    (vom unteren Bildschirmrand bis direkt unter den Header). Rückgabe: Mittelpunkt Start / Ende.
     const getRowRange = (gallery) => {
         const viewport = window.innerHeight;
-        const header = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 0;
+        const header = getHeaderHeight();
         const half = gallery.track.offsetHeight / 2;
         const start = viewport - half;
         const end = header + half;
@@ -76,6 +106,11 @@ export function initScrollGalleries() {
             return clamp((start - center) / (start - end), 0, 1);
         }
         const rect = gallery.section.getBoundingClientRect();
+        if (gallery.pinned) {
+            // Fortschritt, solange die Sektion fixiert ist
+            const distance = gallery.section.offsetHeight - gallery.pin.offsetHeight;
+            return distance > 0 ? clamp((gallery.pinTop - rect.top) / distance, 0, 1) : 0;
+        }
         return clamp((viewport - rect.top) / (viewport + rect.height), 0, 1);
     };
 
