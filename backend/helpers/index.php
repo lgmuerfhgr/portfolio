@@ -26,11 +26,63 @@ function get_media_by_id(int|string $id, string $size = 'm'): false|array
     if ($image) {
         $data['src'] = $image[0];
         $data['type'] = 'image';
+        $data['width'] = (int) $image[1];
+        $data['height'] = (int) $image[2];
+        $data['srcset'] = wp_get_attachment_image_srcset($id, $size) ?: '';
     } else {
         $data['src'] = wp_get_attachment_url($id);
         $data['type'] = get_post_mime_type($id);
     }
     return $data;
+}
+
+// -> Ein <img>-Tag aus den Daten von get_media_by_id() erstellen
+function get_media_image_tag(false|array $media, string $class = '', string $sizes = '100vw', bool $lazy = true): string
+{
+    if (empty($media['src'])) {
+        return '';
+    }
+    $attributes = [
+        'class' => $class,
+        'src' => $media['src'],
+        'alt' => $media['alt'] ?? '',
+        'decoding' => 'async',
+        'loading' => $lazy ? 'lazy' : 'eager',
+    ];
+    if (!empty($media['srcset'])) {
+        $attributes['srcset'] = $media['srcset'];
+        $attributes['sizes'] = $sizes;
+    }
+    if (!empty($media['width']) && !empty($media['height'])) {
+        $attributes['width'] = $media['width'];
+        $attributes['height'] = $media['height'];
+    }
+    $html = '<img';
+    foreach ($attributes as $name => $value) {
+        if ($value === '' && $name !== 'alt') {
+            continue;
+        }
+        $html .= ' ' . $name . '="' . esc_attr($value) . '"';
+    }
+    return $html . '>';
+}
+
+// -> Optionale Anker-ID eines Moduls als HTML-Attribut ausgeben (für die Navigation, z.B. /#about)
+function get_module_id_attr(array $data): string
+{
+    if (empty($data['anchor'])) {
+        return '';
+    }
+    return ' id="' . esc_attr(sanitize_title($data['anchor'])) . '"';
+}
+
+// -> Rich-Text-Inhalte sicher und mit Absätzen ausgeben
+function format_rich_text(?string $text): string
+{
+    if (!$text) {
+        return '';
+    }
+    return wp_kses_post(wpautop($text));
 }
 
 // -> Ein Menu anhand des Keys laden
