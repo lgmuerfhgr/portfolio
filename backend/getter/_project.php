@@ -15,6 +15,7 @@ function get_project_by_id(int $id, string $image_size = 'm', bool $with_gallery
 
     $gallery = [];
     $videos = [];
+    $pdfs = [];
     if ($with_gallery) {
         foreach (carbon_get_post_meta($id, 'gallery') ?: [] as $gallery_id) {
             $media = get_media_by_id($gallery_id, 'l');
@@ -32,6 +33,20 @@ function get_project_by_id(int $id, string $image_size = 'm', bool $with_gallery
                 $videos[] = $embed;
             }
         }
+        foreach (carbon_get_post_meta($id, 'pdfs') ?: [] as $pdf) {
+            $file_id = (int) ($pdf['file'] ?? 0);
+            $src = $file_id ? wp_get_attachment_url($file_id) : false;
+            if (!$src || get_post_mime_type($file_id) !== 'application/pdf') {
+                continue;
+            }
+            $path = get_attached_file($file_id);
+            $pdfs[] = [
+                'src' => $src,
+                'title' => ($pdf['title'] ?? '') ?: get_the_title($file_id),
+                'format' => ($pdf['format'] ?? '') === 'landscape' ? 'landscape' : 'portrait',
+                'size' => $path && file_exists($path) ? size_format(filesize($path), 1) : '',
+            ];
+        }
     }
 
     return [
@@ -45,6 +60,7 @@ function get_project_by_id(int $id, string $image_size = 'm', bool $with_gallery
         'description' => $description,
         'gallery' => $gallery,
         'videos' => $videos,
+        'pdfs' => $pdfs,
         'skills' => carbon_get_post_meta($id, 'skills'),
         'link' => carbon_get_post_meta($id, 'link'),
         'link_label' => carbon_get_post_meta($id, 'link_label') ?: 'Zum Projekt',

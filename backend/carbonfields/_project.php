@@ -59,6 +59,25 @@ Container::make('post_meta', 'Projekt')
             ->set_header_template('<%- caption || url || "Video-Datei" %>')
             ->set_layout('tabbed-vertical'),
 
+        Field::make('complex', 'pdfs', 'PDFs')
+            ->set_help_text('Optional: PDFs (z.B. Präsentation, Broschüre, Konzept), die auf der Projektseite unter den Videos direkt angezeigt werden – mit Links zum Öffnen und Herunterladen.')
+            ->add_fields([
+                Field::make('file', 'file', 'PDF-Datei')
+                    ->set_type(['application/pdf'])
+                    ->set_required()
+                    ->set_help_text('Möglichst unter ca. 10 MB, damit die Seite schnell lädt.'),
+                Field::make('text', 'title', 'Titel')
+                    ->set_help_text('z.B. «Kampagnenkonzept». Leer -> Dateiname.'),
+                Field::make('select', 'format', 'Format')
+                    ->set_options([
+                        'portrait' => 'Hochformat (z.B. A4-Dokument)',
+                        'landscape' => 'Querformat (z.B. Präsentation)',
+                    ])
+                    ->set_default_value('portrait'),
+            ])
+            ->set_header_template('<%- title || "PDF" %>')
+            ->set_layout('tabbed-vertical'),
+
         Field::make('select', 'image_position', 'Bildausschnitt')
             ->set_options([
                 'center' => 'Mitte',
