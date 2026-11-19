@@ -324,6 +324,63 @@ a {
   .project-videos:not(.is-scrollable) .carousel-nav {
     display: none;
   }
+  /* -> PDFs unter den Videos: Desktop eingebettet, Mobile als Karte */
+  .project-pdfs {
+    display: grid;
+    gap: clamp(32px, 3vw, 56px);
+    margin-top: clamp(40px, 4vw, 72px);
+  }
+  .pdf-embed {
+    margin: 0;
+  }
+  .pdf-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4em 1em;
+    margin-bottom: 0.8em;
+    font-family: var(--font-heading);
+    font-size: var(--fs-h3);
+    text-transform: uppercase;
+  }
+  .pdf-size {
+    font-family: var(--font-body);
+    font-size: var(--fs-small);
+    text-transform: none;
+    opacity: 0.6;
+  }
+  .pdf-frame {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1.414;
+    max-height: 80svh;
+    border: 1px solid var(--color-bg);
+    background-color: var(--color-bg);
+  }
+  .is-landscape .pdf-frame {
+    aspect-ratio: 1.414 / 1;
+  }
+  .pdf-card {
+    display: none;
+  }
+  .pdf-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4em 1.4em;
+    margin-top: 0.8em;
+    font-size: var(--fs-small);
+  }
+  .info-link {
+    text-decoration: none;
+    background: linear-gradient(currentColor, currentColor) no-repeat left bottom / 100% 1px;
+    padding-bottom: 1px;
+    transition: background-size 0.4s var(--ease-out);
+    &:hover,
+    &:focus-visible {
+      background-size: 0 1px;
+      background-position: right bottom;
+    }
+  }
   /* Projektseite: weisser Hintergrund (About bleibt beige) */
   [data-module="gallery-about"] {
     background-color: var(--color-white);
@@ -991,6 +1048,46 @@ a {
     width: calc(var(--card-w) * var(--card-scale));
   }
 
+}
+
+/* -> PDFs: auf Touch-Geräten / kleinen Bildschirmen Karte statt eingebettetem Viewer */
+@media (max-width: 768px), (hover: none) {
+  [data-page="project"] {
+    .pdf-frame {
+      display: none;
+    }
+    .pdf-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background-color: var(--color-bg);
+      text-decoration: none;
+      transition: background-color 0.4s var(--ease-out), color 0.4s var(--ease-out);
+      &:hover,
+      &:focus-visible {
+        background-color: var(--color-olive);
+        color: var(--color-white);
+      }
+    }
+    .pdf-card-icon {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 62px;
+      border: 1px solid currentColor;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+    .pdf-card-text {
+      font-family: var(--font-heading);
+      font-size: 1.1rem;
+    }
+    .pdf-title {
+      display: none;
+    }
+  }
 }
 
 /* BREAKPOINT: sm */
