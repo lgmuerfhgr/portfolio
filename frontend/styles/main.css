@@ -68,8 +68,23 @@ a {
 }
 
 /* Styling of all available layout components. */
+/* -> Eingeloggt: Header unter der WordPress-Adminleiste fixieren */
+.admin-bar [data-layout="header"] {
+  top: 32px;
+}
+@media (max-width: 782px) {
+  .admin-bar [data-layout="header"] {
+    top: 46px;
+  }
+}
+@media (max-width: 600px) {
+  .admin-bar [data-layout="header"] {
+    top: 0;
+  }
+}
+
 [data-layout="header"] {
-  padding: clamp(18px, 2.1vw, 36px) var(--gap-page);
+  padding: clamp(12px, 1.2vw, 20px) var(--gap-page);
   background-color: var(--color-white);
   position: sticky;
   top: 0;
@@ -156,15 +171,13 @@ a {
   width: 100%;
   height: 100%;
 }
+/* -> Projektseite: gleicher Aufbau wie die About-Galerie (data-module="gallery-about"),
+      links laufen Titelbild + weitere Bilder vertikal durch, rechts steht der Text still */
 [data-page="project"] {
-  .project {
-    padding: clamp(32px, 5vw, 96px) var(--gap-page) clamp(64px, 8vw, 160px) var(--offset-content);
-    padding-right: var(--offset-content);
-  }
   .back-link {
     display: inline-block;
-    margin-bottom: clamp(32px, 4vw, 64px);
-    font-size: var(--fs-nav);
+    margin-bottom: clamp(24px, 3vw, 48px);
+    font-size: var(--fs-small);
     text-decoration: none;
     background: linear-gradient(currentColor, currentColor) no-repeat left bottom / 0 1px;
     transition: background-size 0.5s var(--ease-out);
@@ -179,39 +192,11 @@ a {
     letter-spacing: 0.08em;
     margin-bottom: 0.75em;
   }
-  .project-title {
-    font-family: var(--font-heading);
-    font-weight: 400;
-    font-size: var(--fs-h1);
+  /* Projekttitel etwas kleiner als «ABOUT ME !», da oft länger */
+  [data-module="gallery-about"] .title {
+    font-size: min(var(--fs-h1), 7svh);
     line-height: 1.05;
-    text-transform: uppercase;
-    margin-bottom: clamp(32px, 4vw, 72px);
-  }
-  .project-body {
-    display: grid;
-    grid-template-columns: minmax(0, 349fr) minmax(0, 700fr);
-    gap: clamp(32px, 13vw, 227px);
-    align-items: start;
-  }
-  .project-media {
-    position: relative;
-    aspect-ratio: 349 / 464;
-    overflow: hidden;
-    .image {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: var(--image-position, center);
-      transition: opacity var(--duration) var(--ease-out), filter var(--duration) var(--ease-out);
-    }
-    .image-color {
-      opacity: 0;
-    }
-    .needs-filter {
-      filter: grayscale(1);
-    }
+    overflow-wrap: anywhere;
   }
   .project-subtitle {
     font-family: var(--font-heading);
@@ -220,21 +205,128 @@ a {
     text-transform: uppercase;
     margin: 2em 0 0.75em;
   }
-  .text p + p {
-    margin-top: 1.32em;
-  }
   .button {
     margin-top: clamp(32px, 3vw, 56px);
   }
-}
-@media (hover: hover) {
-  [data-page="project"] .project-media:hover .image-color {
-    opacity: 1;
+  /* -> Videos unter dem Link-Button: zentrierte Galerie.
+        Aktives Video ganz sichtbar in der Mitte, Nachbarn links/rechts verblasst angeschnitten. */
+  .project-videos {
+    /* cqi = Prozent der Galerie-Breite */
+    container-type: inline-size;
+    --video-w: min(340px, 62cqi);
+    margin-top: clamp(32px, 3vw, 56px);
   }
-}
-@media (hover: none) {
-  [data-page="project"] .project-media .image-color {
+  .video-track {
+    position: relative;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 1.4vw, 24px);
+    /* Innenabstand, damit auch das erste und letzte Video in die Mitte kommen */
+    padding-inline: calc((100cqi - var(--video-w)) / 2);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  .video-item {
+    flex: 0 0 var(--video-w);
+    width: var(--video-w);
+    scroll-snap-align: center;
+    opacity: 0.3;
+    transform: scale(0.94);
+    transition:
+      opacity 0.5s var(--ease-out),
+      transform 0.5s var(--ease-out);
+    cursor: pointer;
+    &.is-active {
+      opacity: 1;
+      transform: none;
+      cursor: auto;
+    }
+    /* Verblasste Videos: Klick holt sie in die Mitte, statt sie abzuspielen */
+    &:not(.is-active) > * {
+      pointer-events: none;
+    }
+  }
+  /* Querformat etwas breiter */
+  .video-item.is-landscape {
+    flex-basis: min(86cqi, 520px);
+    width: min(86cqi, 520px);
+  }
+  /* Ohne JavaScript: alle Videos voll sichtbar */
+  .project-videos:not(.is-ready) .video-item {
     opacity: 1;
+    transform: none;
+  }
+  .video-frame {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--ratio, 9 / 16);
+    object-fit: cover;
+    background-color: var(--color-bg);
+    border: 0;
+    iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+  }
+  .video-item--instagram .instagram-media {
+    min-width: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  .video-caption {
+    margin-top: 0.6em;
+    font-size: var(--fs-small);
+    text-align: center;
+  }
+  .carousel-nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .carousel-button {
+    width: 44px;
+    height: 44px;
+    border: 1px solid currentColor;
+    background: none;
+    color: inherit;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition:
+      background-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out),
+      opacity 0.3s var(--ease-out);
+    &:hover:not(:disabled),
+    &:focus-visible {
+      background-color: var(--color-olive);
+      border-color: var(--color-olive);
+      color: var(--color-white);
+    }
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+  }
+  /* Pfeile nur bei mehr als einem Video (per JS) */
+  .project-videos:not(.is-scrollable) .carousel-nav {
+    display: none;
+  }
+  /* Projektseite: weisser Hintergrund (About bleibt beige) */
+  [data-module="gallery-about"] {
+    background-color: var(--color-white);
   }
 }
 
@@ -272,24 +364,17 @@ a {
   align-items: center;
   min-height: calc(100svh - var(--header-h));
   padding: clamp(24px, 4vw, 64px) var(--gap-page);
-  & > .image {
-    display: block;
+  .hero-media {
     width: 100%;
     max-width: 1660px;
+  }
+  .image,
+  .hero-video {
+    display: block;
+    width: 100%;
     height: auto;
     max-height: calc(100svh - var(--header-h) - 2 * clamp(24px, 4vw, 64px));
     object-fit: contain;
-  }
-  & > .image.is-animated {
-    animation: hero-write 2.6s var(--ease-in-out) 0.2s both;
-  }
-}
-@keyframes hero-write {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
   }
 }
 
@@ -393,7 +478,8 @@ a {
 
 /* -> Übersicht Projekte: horizontale Galerie, die sich beim vertikalen Scrollen bewegt */
 [data-module="overview-projects"] {
-  --card-w: clamp(200px, 19.2vw, 360px);  /* 331px */
+  --card-w-base: clamp(200px, 19.2vw, 360px);  /* 331px */
+  --card-w: var(--card-w-base);
   --card-ratio: 447 / 331;
   --card-h: calc(var(--card-w) * 447 / 331);
   --card-gap: clamp(24px, 3.7vw, 72px);
@@ -413,8 +499,27 @@ a {
   /* Der Abstand liegt auf dem Scroll-Container, damit die Info über der Karte nicht abgeschnitten wird */
   .projects {
     position: relative;
-    padding-top: calc(var(--card-w) * 1.15);
+    /* Platz für die Info über der vergrösserten Karte (Titel max. 3 Zeilen, Text max. 5 Zeilen, Links) */
+    padding-top: max(
+      calc(var(--card-w) * 1.15),
+      calc(var(--card-h) * (var(--card-scale) - 1) / 2 + var(--info-gap) + 17rem)
+    );
     padding-bottom: calc(var(--card-w) * 0.88);
+  }
+  /* Fixiert (Desktop, per JS): Die Sektion bleibt stehen, die Karten fahren horizontal durch.
+     Höhe = Bildschirm unter dem Header; Karten werden bei Bedarf kleiner, damit Info und Karte Platz haben. */
+  &.is-pinned {
+    --card-w: min(var(--card-w-base), calc((100svh - var(--header-h) - 17rem - 4rem) / 1.68));
+    .projects {
+      position: sticky;
+      top: var(--pin-top, var(--header-h));
+      height: calc(100svh - var(--header-h));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: calc(var(--card-h) * (var(--card-scale) - 1) / 2 + var(--info-gap) + 17rem);
+      padding-bottom: calc(var(--card-h) * (var(--card-scale) - 1) / 2 + 2rem);
+    }
   }
   .projects-track {
     display: flex;
@@ -446,15 +551,9 @@ a {
     height: 100%;
     object-fit: cover;
     object-position: var(--image-position, center);
-    transition:
-      opacity var(--duration) var(--ease-out),
-      filter var(--duration) var(--ease-out);
-  }
-  .image-color {
-    opacity: 0;
-  }
-  .needs-filter {
+    /* Titelbild wird automatisch schwarzweiss dargestellt, farbig im aktiven Zustand */
     filter: grayscale(1);
+    transition: filter var(--duration) var(--ease-out);
   }
   /* Platzhalter ohne Bild: Rahmen wie in der Figma-Vorlage */
   &.is-empty .media {
@@ -490,8 +589,26 @@ a {
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
-  .info-text p + p {
-    margin-top: 0.6em;
+  .info-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  /* Im Hover nur der Anfang der Beschreibung, der ganze Text steht auf der Detailseite */
+  .info-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    overflow: hidden;
+    p {
+      display: inline;
+    }
+    p + p::before {
+      content: " ";
+    }
   }
   .info-links {
     display: flex;
@@ -517,10 +634,7 @@ a {
     .media {
       transform: scale(var(--card-scale));
     }
-    .image-color {
-      opacity: 1;
-    }
-    .needs-filter {
+    .image {
       filter: grayscale(0);
     }
     .info {
@@ -540,10 +654,7 @@ a {
     .media {
       transform: scale(var(--card-scale));
     }
-    .image-color {
-      opacity: 1;
-    }
-    .needs-filter {
+    .image {
       filter: grayscale(0);
     }
     .info {
@@ -658,7 +769,7 @@ a {
     color 0.4s var(--ease-out);
   &:hover,
   &:focus-visible {
-    background-color: var(--color-black);
+    background-color: var(--color-olive);
     color: var(--color-white);
   }
 }
@@ -754,7 +865,7 @@ a {
       minmax(0, 0.6fr);
   }
   [data-module="overview-projects"] {
-    --card-w: clamp(200px, 26vw, 300px);
+    --card-w-base: clamp(200px, 26vw, 300px);
   }
 }
 
@@ -866,7 +977,10 @@ a {
     --card-w: 64vw;
     --card-scale: 1.1;
     .projects {
-      padding-top: calc(var(--card-w) * 1.25);
+      padding-top: max(
+        calc(var(--card-w) * 1.25),
+        calc(var(--card-h) * (var(--card-scale) - 1) / 2 + var(--info-gap) + 17rem)
+      );
       padding-bottom: calc(var(--card-w) * 0.35);
     }
     .projects-track {
@@ -877,11 +991,6 @@ a {
     width: calc(var(--card-w) * var(--card-scale));
   }
 
-  [data-page="project"] {
-    .project-body {
-      grid-template-columns: 1fr;
-    }
-  }
 }
 
 /* BREAKPOINT: sm */

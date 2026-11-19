@@ -14,13 +14,14 @@ Unter `Projekte` wird pro Projekt ein Eintrag erstellt.
 
 | Feld | Hinweis |
 | --- | --- |
-| Titel | Erscheint zentriert auf der Karte und im Hover über der Karte |
-| Bild (schwarzweiss) | Ruhezustand, Hochformat ca. **3:4** (z.B. 1200 × 1620px) |
-| Bild (farbig) | Erscheint beim Hover, gleiches Format. Darf auch eine alternative Bildversion sein. Fehlt es, wird das erste Bild per Filter eingefärbt dargestellt. |
-| Beschreibung | Kurzer Text, erscheint beim Hover über der Karte und auf der Detailseite |
-| Kompetenzen | Nur auf der Detailseite |
+| Titel | Erscheint im Hover über der Karte und als Überschrift der Projektseite |
+| Titelbild | **Ein farbiges Bild**, Hochformat ca. **3:4** (z.B. 1200 × 1600px). Wird automatisch schwarzweiss dargestellt und beim Hover farbig |
+| Lead-Text | Kurzer Text (2–4 Sätze) für die Startseite (Hover). Leer -> Anfang des Projekttexts |
+| Projekttext | Vollständiger Text, nur auf der Projektseite («Mehr erfahren») |
+| Weitere Bilder | Galerie auf der Projektseite unter dem Text, per Drag & Drop sortierbar |
+| Kompetenzen | Nur auf der Projektseite |
 | Link / Link-Beschriftung | Optional, externer Link (Button «Zum Projekt ↗») |
-| Bildausschnitt | Welcher Teil des Bildes in der Hochformat-Karte sichtbar bleibt |
+| Bildausschnitt | Welcher Teil des Titelbilds in der Hochformat-Karte sichtbar bleibt |
 | Kategorien | z.B. «Brand Experience», «Multimedia Projects» |
 
 ## 🧱 Module der Startseite (Reihenfolge gem. Figma)

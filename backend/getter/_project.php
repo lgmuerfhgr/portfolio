@@ -1,25 +1,50 @@
 <?php
 
 // -> Ein Projekt anhand der ID laden und für das Frontend aufbereiten
-function get_project_by_id(int $id, string $image_size = 'm'): array
+//    $with_gallery: weitere Bilder nur laden, wenn sie gebraucht werden (Projektseite)
+function get_project_by_id(int $id, string $image_size = 'm', bool $with_gallery = false): array
 {
-    $image_id = carbon_get_post_meta($id, 'image');
-    $image_hover_id = carbon_get_post_meta($id, 'image_hover');
+    // Titelbild; Fallback auf die früheren Felder «Bild (farbig)» / «Bild (schwarzweiss)»,
+    // damit bestehende Projekte ohne Titelbild weiterhin ein Bild zeigen
+    $image_id = carbon_get_post_meta($id, 'image_main')
+        ?: get_post_meta($id, '_image_hover', true)
+        ?: get_post_meta($id, '_image', true);
     $terms = get_the_terms($id, 'project_categories');
+    $description = carbon_get_post_meta($id, 'description');
+    $lead = carbon_get_post_meta($id, 'lead');
 
-    $image = $image_id ? get_media_by_id($image_id, $image_size) : false;
-    $image_hover = $image_hover_id ? get_media_by_id($image_hover_id, $image_size) : false;
+    $gallery = [];
+    $videos = [];
+    if ($with_gallery) {
+        foreach (carbon_get_post_meta($id, 'gallery') ?: [] as $gallery_id) {
+            $media = get_media_by_id($gallery_id, 'l');
+            if (!empty($media['src'])) {
+                $gallery[] = $media;
+            }
+        }
+        foreach (carbon_get_post_meta($id, 'videos') ?: [] as $video) {
+            $file = !empty($video['file']) ? wp_get_attachment_url((int) $video['file']) : false;
+            $embed = $file
+                ? ['type' => 'file', 'src' => $file, 'ratio' => get_video_ratio($video['ratio'] ?? '')]
+                : get_video_embed($video['url'] ?? '', $video['ratio'] ?? '16 / 9');
+            if ($embed) {
+                $embed['caption'] = $video['caption'] ?? '';
+                $videos[] = $embed;
+            }
+        }
+    }
 
     return [
         'id' => $id,
         'title' => get_the_title($id),
         'url' => get_permalink($id),
-        'image' => $image,
-        'image_hover' => $image_hover,
-        // -> Ohne farbiges Bild wird das schwarzweisse Bild per CSS-Filter umgefärbt
-        'needs_filter' => $image && !$image_hover,
+        'image' => $image_id ? get_media_by_id($image_id, $image_size) : false,
         'image_position' => carbon_get_post_meta($id, 'image_position') ?: 'center',
-        'description' => carbon_get_post_meta($id, 'description'),
+        // Lead für die Startseite; leer -> Anfang des Projekttexts
+        'lead' => $lead ? esc_html($lead) : $description,
+        'description' => $description,
+        'gallery' => $gallery,
+        'videos' => $videos,
         'skills' => carbon_get_post_meta($id, 'skills'),
         'link' => carbon_get_post_meta($id, 'link'),
         'link_label' => carbon_get_post_meta($id, 'link_label') ?: 'Zum Projekt',
@@ -71,4 +96,50 @@ function get_project_category_options(): array
         }
     }
     return $options;
+}
+
+// -> Einen Vimeo- oder Instagram-Link in Einbett-Daten umwandeln (false bei unbekanntem Link)
+function get_video_embed(string $url, string $ratio = '16 / 9'): array|false
+{
+    $url = trim($url);
+    if ($url === '') {
+        return false;
+    }
+
+    // Vimeo: vimeo.com/123, vimeo.com/123/abcdef (nicht gelistet), player.vimeo.com/video/123?h=abcdef
+    if (preg_match('~vimeo\.com/(?:.*?/)?(?:video/)?(\d+)(?:/([a-z0-9]+))?~i', $url, $match)) {
+        $hash = $match[2] ?? '';
+        if (!$hash && preg_match('~[?&]h=([a-z0-9]+)~i', $url, $hash_match)) {
+            $hash = $hash_match[1];
+        }
+        return [
+            'type' => 'vimeo',
+            // dnt=1: Vimeo setzt keine Tracking-Cookies
+            'src' => 'https://player.vimeo.com/video/' . $match[1] . '?' . http_build_query(array_filter([
+                'h' => $hash,
+                'dnt' => 1,
+                'title' => 0,
+                'byline' => 0,
+                'portrait' => 0,
+            ], fn ($value) => $value !== '')),
+            'ratio' => get_video_ratio($ratio),
+        ];
+    }
+
+    // Instagram: instagram.com/p/CODE, /reel/CODE, /reels/CODE, /tv/CODE
+    if (preg_match('~instagram\.com/(?:[a-z0-9_.]+/)?(p|reels?|tv)/([a-z0-9_-]+)~i', $url, $match)) {
+        $kind = strtolower($match[1]) === 'p' ? 'p' : (strtolower($match[1]) === 'tv' ? 'tv' : 'reel');
+        return [
+            'type' => 'instagram',
+            'permalink' => 'https://www.instagram.com/' . $kind . '/' . $match[2] . '/',
+        ];
+    }
+
+    return false;
+}
+
+// -> Nur bekannte Seitenverhältnisse zulassen
+function get_video_ratio(string $ratio): string
+{
+    return in_array($ratio, ['16 / 9', '9 / 16', '4 / 5', '1 / 1'], true) ? $ratio : '16 / 9';
 }
